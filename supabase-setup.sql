@@ -48,8 +48,22 @@ create table if not exists public.portfolio_creators (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(name) between 1 and 60),
   url text not null default '',
+  sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- Add persistent ordering for creators on projects initialized before this field existed.
+alter table public.portfolio_creators add column if not exists sort_order integer;
+with ranked_creators as (
+  select id, row_number() over (order by created_at desc, id desc) - 1 as position
+  from public.portfolio_creators
+)
+update public.portfolio_creators as creator
+set sort_order = ranked_creators.position
+from ranked_creators
+where creator.id = ranked_creators.id and creator.sort_order is null;
+alter table public.portfolio_creators alter column sort_order set default 0;
+alter table public.portfolio_creators alter column sort_order set not null;
 
 alter table public.portfolio_admins enable row level security;
 alter table public.portfolio_works enable row level security;
