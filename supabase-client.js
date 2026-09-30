@@ -36,10 +36,17 @@
       }));
     },
     async listCreators() {
-      const { data, error } = await client
+      let { data, error } = await client
         .from("portfolio_creators")
-        .select("id,name,url,created_at")
+        .select("id,name,url,created_at,sort_order")
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
+      if (error && (error.code === "42703" || /sort_order/i.test(error.message || ""))) {
+        ({ data, error } = await client
+          .from("portfolio_creators")
+          .select("id,name,url,created_at")
+          .order("created_at", { ascending: false }));
+      }
       if (error) throw error;
       return data || [];
     }
