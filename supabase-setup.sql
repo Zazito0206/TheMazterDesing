@@ -27,8 +27,22 @@ create table if not exists public.portfolio_works (
   title text not null check (char_length(title) between 1 and 100),
   category text not null check (char_length(category) between 1 and 40),
   image_path text not null,
+  sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- Upgrade existing projects safely and preserve their current newest-first order.
+alter table public.portfolio_works add column if not exists sort_order integer;
+with ranked_works as (
+  select id, row_number() over (order by created_at desc, id desc) - 1 as position
+  from public.portfolio_works
+)
+update public.portfolio_works as work
+set sort_order = ranked_works.position
+from ranked_works
+where work.id = ranked_works.id and work.sort_order is null;
+alter table public.portfolio_works alter column sort_order set default 0;
+alter table public.portfolio_works alter column sort_order set not null;
 
 create table if not exists public.portfolio_creators (
   id uuid primary key default gen_random_uuid(),
@@ -111,3 +125,4 @@ create policy "admins delete thumbnails"
 
 -- After creating the admin user in Supabase Auth > Users, add their UUID here:
 -- insert into public.portfolio_admins (user_id) values ('PASTE_AUTH_USER_UUID_HERE');
+
