@@ -6,6 +6,7 @@ Portafolio estático en español para miniaturas de YouTube. Incluye una portada
 
 1. Crea un proyecto en Supabase.
 2. Abre **SQL Editor**, pega y ejecuta el contenido de [`supabase-setup.sql`](supabase-setup.sql).
+   Si el proyecto ya está conectado, vuelve a ejecutar este archivo para agregar soporte al orden manual de trabajos; conserva el contenido y los permisos existentes.
 3. En **Authentication → Users**, crea un usuario administrador con correo y contraseña. Desactiva los registros públicos para que solo tú puedas entrar.
 4. Copia el UUID de ese usuario y ejecuta en SQL Editor, reemplazando el marcador:
 
@@ -34,3 +35,4 @@ En Vercel selecciona **Add New → Project**, importa `Zazito0206/TheMazterDesin
 - `supabase-setup.sql`: tablas, políticas RLS y bucket de imágenes.
 
 No pongas una clave `service_role` o una clave secreta en el sitio. La clave publishable/anon es para el navegador y debe usarse junto con las políticas RLS del SQL.
+
