@@ -16,10 +16,17 @@
     client,
     bucket,
     async listWorks() {
-      const { data, error } = await client
+      let { data, error } = await client
         .from("portfolio_works")
-        .select("id,title,category,image_path,created_at")
+        .select("id,title,category,image_path,created_at,sort_order")
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
+      if (error && (error.code === "42703" || /sort_order/i.test(error.message || ""))) {
+        ({ data, error } = await client
+          .from("portfolio_works")
+          .select("id,title,category,image_path,created_at")
+          .order("created_at", { ascending: false }));
+      }
       if (error) throw error;
       return (data || []).map((work) => ({
         ...work,
@@ -38,3 +45,4 @@
     }
   };
 })();
+
